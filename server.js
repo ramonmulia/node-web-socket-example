@@ -4,6 +4,7 @@ var http = require('http').Server(app);
 var io = require('socket.io')(http);
 
 var users = [];
+var messages = [];
 var port = process.env.PORT || 3000;
 
 app.use(express.static(__dirname + '/public'));
@@ -14,29 +15,43 @@ app.get('/', function(req, res) {
 
 io.on('connection', function(socket) {
 
-    socket.emit('isLogged', socket.username);
-
     socket.on('message', function(msg) {
-        socket.emit('message', socket.username, msg);
-        socket.broadcast.emit('message', socket.username, msg);
+        socket.emit('message', msg.user, msg.message);
+        socket.broadcast.emit('message', msg.user, msg.message);
+        checkLengthMessages(msg);
     });
 
     socket.on('join', function(user) {
         socket.username = user;
-        socket.broadcast.emit('users', user);
-        users.push(user);
-        users.forEach(function(user) {
-            socket.emit('users', user);
+        if (users.indexOf(user) == -1) {
+            users.push(user);
+            socket.broadcast.emit('users', user);
+            users.forEach(function(user) {
+                socket.emit('users', user);
+            });
+        } else {
+            users.forEach(function(user) {
+                socket.emit('users', user);
+            });
+        }
+        messages.forEach(function(msg) {
+            socket.emit('message', msg.user, msg.message);
         });
     });
-});
 
-io.on('disconect', function(socket) {
-    var index = array.indexOf(socket.username);
-    users = users.splice(1, index);
-    socket.emit('users', user);
+    socket.on('disconnect', function() {
+        users = users.splice(1, users.indexOf(socket.username));
+        socket.broadcast.emit('removeUser', socket.username);
+    });
 });
 
 http.listen(port, function() {
     console.log('listening port: ' + port);
 });
+
+function checkLengthMessages(msg) {
+    if (messages.length > 10) {
+        messages.shift();
+    }
+    messages.push(msg);
+}

@@ -1,17 +1,13 @@
 (function() {
     var socket = io();
-
-    socket.on('isLogged', function(username) {
-        if (!username) {
-            var person = prompt("Please enter your name");
-            if (person) {
-                socket.emit('join', person);
-            }
-        }
-    })
+    var person = prompt("Please enter your name");
+    socket.emit('join', person);
 
     $('form').submit(function() {
-        socket.emit('message', $('#m').val());
+        socket.emit('message', {
+            user: person,
+            message: $('#m').val()
+        });
         $('#m').val('');
         return false;
     });
@@ -21,6 +17,11 @@
     });
 
     socket.on('users', function(user) {
-        $('#user-list').append($('<li>').text(user));
+        $('#user-list').append($('<li id="' + user + '">').text(user));
+    });
+
+    socket.on('removeUser', function(user) {
+        debugger;
+        $('#user-list').find($('#' + user)).remove();
     })
 })();
