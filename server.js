@@ -29,7 +29,7 @@ io.on('connection', function(socket) {
             users.forEach(function(user) {
                 socket.emit('users', user);
             });
-        } else { 
+        } else {
             users.forEach(function(user) {
                 socket.emit('users', user);
             });
@@ -42,6 +42,9 @@ io.on('connection', function(socket) {
     socket.on('disconnect', function() {
         users = users.splice(1, users.indexOf(socket.username));
         socket.broadcast.emit('removeUser', socket.username);
+        if (!users.length) {
+            messages = [];
+        }
     });
 });
 
