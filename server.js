@@ -4,6 +4,7 @@ var http = require('http').Server(app);
 var io = require('socket.io')(http);
 
 var users = [];
+var port = process.env.PORT || 3000;
 
 app.use(express.static(__dirname + '/public'));
 
@@ -36,6 +37,6 @@ io.on('disconect', function(socket) {
     socket.emit('users', user);
 });
 
-http.listen(3000, function() {
-    console.log('listening port: 3000');
+http.listen(port, function() {
+    console.log('listening port: ' + port);
 });
